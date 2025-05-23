@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Stock Market Analyzer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <h1 class="mb-4 text-center">Stock Market Analyzer</h1>
+        <div class="card shadow">
+            <div class="card-body">
+                <form class="row g-3 mb-4" id="stockForm">
+                    <div class="col-md-6">
+                        <label for="stockSelect" class="form-label">Select Stock</label>
+                        <select class="form-select" id="stockSelect">
+                            <option value="AAPL">AAPL</option>
+                            <option value="GOOGL">GOOGL</option>
+                            <option value="MSFT">MSFT</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">Analyze</button>
+                    </div>
+                </form>
+                <canvas id="stockChart" height="100"></canvas>
+                <div class="mt-4" id="stockStats"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Dummy stock data
+        const stockData = {
+            AAPL: {
+                label: "Apple Inc.",
+                prices: [172, 174, 173, 175, 177, 176, 178, 180, 182, 181, 183, 185],
+                dates: [
+                    "2024-06-01", "2024-06-02", "2024-06-03", "2024-06-04",
+                    "2024-06-05", "2024-06-06", "2024-06-07", "2024-06-08",
+                    "2024-06-09", "2024-06-10", "2024-06-11", "2024-06-12"
+                ]
+            },
+            GOOGL: {
+                label: "Alphabet Inc.",
+                prices: [2800, 2820, 2810, 2835, 2850, 2840, 2860, 2875, 2890, 2880, 2900, 2915],
+                dates: [
+                    "2024-06-01", "2024-06-02", "2024-06-03", "2024-06-04",
+                    "2024-06-05", "2024-06-06", "2024-06-07", "2024-06-08",
+                    "2024-06-09", "2024-06-10", "2024-06-11", "2024-06-12"
+                ]
+            },
+            MSFT: {
+                label: "Microsoft Corp.",
+                prices: [320, 322, 321, 324, 326, 325, 327, 329, 331, 330, 332, 334],
+                dates: [
+                    "2024-06-01", "2024-06-02", "2024-06-03", "2024-06-04",
+                    "2024-06-05", "2024-06-06", "2024-06-07", "2024-06-08",
+                    "2024-06-09", "2024-06-10", "2024-06-11", "2024-06-12"
+                ]
+            }
+        };
+
+        // Chart.js setup
+        let chart;
+        function renderChart(stockKey) {
+            const data = stockData[stockKey];
+            const ctx = document.getElementById('stockChart').getContext('2d');
+            if (chart) chart.destroy();
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.dates,
+                    datasets: [{
+                        label: data.label + " Price",
+                        data: data.prices,
+                        borderColor: 'rgba(13,110,253,0.8)',
+                        backgroundColor: 'rgba(13,110,253,0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: true }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: 'Date' } },
+                        y: { title: { display: true, text: 'Price (USD)' } }
+                    }
+                }
+            });
+        }
+
+        function showStats(stockKey) {
+            const data = stockData[stockKey];
+            const prices = data.prices;
+            const min = Math.min(...prices);
+            const max = Math.max(...prices);
+            const avg = (prices.reduce((a, b) => a + b, 0) / prices.length).toFixed(2);
+            const change = ((prices[prices.length - 1] - prices[0]) / prices[0] * 100).toFixed(2);
+
+            document.getElementById('stockStats').innerHTML = `
+                <div class="row text-center">
+                    <div class="col">
+                        <h6>Min Price</h6>
+                        <p class="text-danger">$${min}</p>
+                    </div>
+                    <div class="col">
+                        <h6>Max Price</h6>
+                        <p class="text-success">$${max}</p>
+                    </div>
+                    <div class="col">
+                        <h6>Average Price</h6>
+                        <p class="text-primary">$${avg}</p>
+                    </div>
+                    <div class="col">
+                        <h6>Total Change</h6>
+                        <p class="${change >= 0 ? 'text-success' : 'text-danger'}">${change}%</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Initial render
+        document.addEventListener('DOMContentLoaded', () => {
+            renderChart('AAPL');
+            showStats('AAPL');
+        });
+
+        // Handle form
+        document.getElementById('stockForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const stockKey = document.getElementById('stockSelect').value;
+            renderChart(stockKey);
+            showStats(stockKey);
+        });
+    </script>
+</body>
+</html>
